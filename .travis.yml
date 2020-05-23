@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t complex-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run complex-test npm test -- --coverage
+
+after_success:
+  - docker build -t mozart89/complex-client ./client
+  - docker build -t mozart89/complex-nginx ./nginx
+  - docker build -t mozart89/complex-server ./server
+  - docker build -t mozart89/complex-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Push images
+  - docker push mozart89/complex-client
+  - docker push mozart89/complex-nginx
+  - docker push mozart89/complex-server
+  - docker push mozart89/complex-worker
